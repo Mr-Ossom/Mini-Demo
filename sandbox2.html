@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shortest Route Finder</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet Routing Machine -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css"
+  />
+  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    #map {
+      height: 85vh;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100">
+      <!-- NavBar -->
+    <section class="w-screen h-25 bg-[#FFFFFF] shadow-lg flex items-center justify-between px-6 py-4">
+        <div class="flex items-center space-x-3">
+             <img src="logo.png" alt="Logo" class="h-10 w-10"/>
+            <div>
+                <h1 class="text-lg font-semibold">NavSwift</h1>
+                <p class="text-sm text-gray-500">Navigate with precision.</p>
+            </div>
+        </div>
+        
+        <!-- Right icons -->
+        <div class="flex items-center space-x-4">
+
+            <!-- Sun Icon -->
+            <button class="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v1"/><path d="M12 20v1"/><path d="M3 12h1"/><path d="M20 12h1"/><path d="m18.364 5.636-.707.707"/><path d="m6.343 17.657-.707.707"/><path d="m5.636 5.636.707.707"/><path d="m17.657 17.657.707.707"/></svg>
+            </button>
+
+            <!-- Mobile Sidebar Toggle Button -->
+            <button id="toggleSidebar" class="md:hidden text-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4" y1="6" x2="20" y2="6"/>
+                  <line x1="4" y1="12" x2="20" y2="12"/>
+                  <line x1="4" y1="18" x2="20" y2="18"/>
+              </svg>
+            </button>
+
+        </div>
+    </section>
+
+  <!-- Layout -->
+  <section class="flex h-[85vh]">
+
+    <!-- Map Section -->
+    <div id="map" class="flex-1"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar" 
+    class="w-80 bg-white shadow-lg p-6 flex flex-col space-y-4
+        fixed right-0 top-20 h-[calc(100vh-5rem)] z-50
+        transform translate-x-full transition-transform duration-300
+        md:static md:translate-x-0 md:h-auto">
+
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 mb-4">Shortest Route Finder</h1>
+            <p class="text-gray-600 mb-6">
+                Click on the map to drop points. Then click “Find Shortest Route” to draw the path.
+            </p>
+
+            <button id="resetMap" class="w-full flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 mb-4 transition">
+                <i data-lucide="trash-2"></i> Reset Map
+            </button>
+
+            <button id="runAlgorithm" class="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
+                <i data-lucide="route"></i> Find Shortest Route
+            </button>
+        </div>
+
+      <!-- Location Input Section -->
+        <div class="space-y-2">
+            <div>
+                <label for="start" class="text-sm text-gray-600 font-medium">Starting Location</label>
+                <input id="start" type="text" placeholder="e.g., Accra Mall"
+                class="w-full mt-1 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            </div>
+
+            <div>
+                <label for="end" class="text-sm text-gray-600 font-medium">Destination</label>
+                <input id="end" type="text" placeholder="e.g., Kotoka Airport"
+                class="w-full mt-1 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 focus:outline-none" />
+            </div>
+
+            <button id="findRoute"
+                class="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
+                <i data-lucide="route"></i> Find Route
+            </button>
+        </div>
+
+    </div>
+  </section>
+
+  <!-- JS Logic -->
+  <script>
+    // Initialize the map (Accra as default center)
+    const map = L.map('map').setView([5.6037, -0.1870], 13);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    let markers = [];
+    let routingControl = null;
+
+    // Handle map clicks
+    map.on('click', (e) => {
+      const marker = L.marker(e.latlng).addTo(map);
+      markers.push(marker);
+    });
+
+    // Run Dijkstra (via roads)
+    document.getElementById('runAlgorithm').addEventListener('click', () => {
+      if (markers.length < 2) {
+        alert('Add at least two points on the map!');
+        return;
+      }
+
+      if (routingControl) {
+        map.removeControl(routingControl);
+      }
+
+      routingControl = L.Routing.control({
+        waypoints: markers.map(m => m.getLatLng()),
+        routeWhileDragging: false,
+        addWaypoints: false,
+        draggableWaypoints: false,
+        lineOptions: {
+          styles: [{ color: 'blue', weight: 5 }]
+        }
+      }).addTo(map);
+    });
+
+    // Reset map
+    document.getElementById('resetMap').addEventListener('click', () => {
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+      if (routingControl) map.removeControl(routingControl);
+      routingControl = null;
+    });
+
+    // Geocoding helper
+    async function geocode(place) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.length === 0) throw new Error("Location not found");
+      return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    }
+
+    // Find route using text input
+    document.getElementById("findRoute").addEventListener("click", async () => {
+      const start = document.getElementById("start").value.trim();
+      const end = document.getElementById("end").value.trim();
+      if (!start || !end) return alert("Please enter both locations");
+
+      try {
+        const [startCoords, endCoords] = await Promise.all([geocode(start), geocode(end)]);
+
+        if (routingControl) map.removeControl(routingControl);
+
+        routingControl = L.Routing.control({
+          waypoints: [
+            L.latLng(startCoords[0], startCoords[1]),
+            L.latLng(endCoords[0], endCoords[1])
+          ],
+          routeWhileDragging: true,
+          lineOptions: { styles: [{ color: "blue", weight: 5 }] }
+        }).addTo(map);
+
+        map.fitBounds([startCoords, endCoords]);
+      } catch (err) {
+        alert("Could not find one of the locations. Try again!");
+      }
+    });
+
+    // Initialize icons
+    lucide.createIcons();
+
+    // MOBILE SIDEBAR TOGGLE
+    document.getElementById("toggleSidebar").addEventListener("click", () => {
+      const sidebar = document.getElementById("sidebar");
+
+      if (sidebar.classList.contains("translate-x-full")) {
+          sidebar.classList.remove("translate-x-full");
+          sidebar.classList.add("translate-x-0");
+      } else {
+          sidebar.classList.remove("translate-x-0");
+          sidebar.classList.add("translate-x-full");
+      }
+    });
+
+  </script>
+
+</body>
+</html>
