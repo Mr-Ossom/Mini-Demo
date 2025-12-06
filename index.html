@@ -71,7 +71,7 @@
           </p>
           
           <div class="flex gap-2">
-            <button id="resetaMap" class="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition text-sm">
+            <button id="resetMapTop" class="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition text-sm">
               <i data-lucide="trash-2" class="w-4 h-4"></i> Reset
             </button>
 
@@ -175,7 +175,6 @@
         }).addTo(map);
       });
 
-      // Reset map
       // Reset map function
 function resetMapHandler() {
   markers.forEach(m => map.removeLayer(m));
@@ -187,6 +186,7 @@ function resetMapHandler() {
 // Attach to both reset buttons
 document.getElementById('resetMap').addEventListener('click', resetMapHandler);
 document.getElementById('resetMapBottom').addEventListener('click', resetMapHandler);
+document.getElementById('resetMapTop').addEventListener('click', resetMapHandler);
 
       // Initialize icons
       lucide.createIcons();
