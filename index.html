@@ -1,248 +1,252 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shortest Route Finder</title>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shortest Route Finder</title>
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Leaflet Routing Machine -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css"
-  />
-  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <!-- Leaflet Routing Machine -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css"
+    />
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
-  <style>
-    #map {
-      height: 85vh;
-      width: 100%;
-    }
-  </style>
-</head>
+    <style>
+      #map {
+        height: 85vh;
+        width: 100%;
+      }
+    </style>
+  </head>
 
-<body class="bg-gray-100">
-      <!-- NavBar -->
-    <section class="w-screen h-25 bg-[#FFFFFF] shadow-lg flex items-center justify-between px-6 py-4">
-        <div class="flex items-center space-x-3">
-            <!-- <h1 class="bg-blue-500 text-white rounded-md px-2 py-1 text-sm font-bold">Route Finder</h1> -->
-             <img src="logo.png" alt="Logo" class="h-10 w-10"/>
-            <div>
-                <h1 class="text-lg font-semibold">NavSwift</h1>
-                <p class="text-sm text-gray-500">Navigate with precision.</p>
-            </div>
-        </div>
-        
-        <!-- Right icons -->
-        <div id="toggleBtn" class="flex items-center space-x-4">
-            <button class="text-gray-500 hover:text-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="4" y1="6" x2="20" y2="6"/>
-                  <line x1="4" y1="12" x2="20" y2="12"/>
-                  <line x1="4" y1="18" x2="20" y2="18"/>
-              </svg>
+  <body class="bg-gray-100">
+        <!-- NavBar -->
+      <section class="w-screen h-25 bg-[#FFFFFF] shadow-lg flex items-center justify-between px-6 py-4">
+          <div class="flex items-center space-x-3">
+              <!-- <h1 class="bg-blue-500 text-white rounded-md px-2 py-1 text-sm font-bold">Route Finder</h1> -->
+              <img src="logo.png" alt="Logo" class="h-10 w-10"/>
+              <div>
+                  <h1 class="text-lg font-semibold">NavSwift</h1>
+                  <p class="text-sm text-gray-500">Navigate with precision.</p>
+              </div>
+          </div>
+          
+          <!-- Right icons -->
+          <div id="toggleBtn" class="flex items-center space-x-4">
+              <button class="text-gray-500 hover:text-gray-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="6" x2="20" y2="6"/>
+                    <line x1="4" y1="12" x2="20" y2="12"/>
+                    <line x1="4" y1="18" x2="20" y2="18"/>
+                </svg>
+              </button>
+          </div>
+      </section>
+
+    <!-- Layout -->
+    <section class="flex h-[85vh]">
+
+      <!-- Map Section -->
+      <div id="map" class="flex-1"></div>
+
+      <!-- Mobile Controls -->
+      <div class="lg:hidden absolute bottom-2 left-4 right-4 z-[1000] space-y-3">
+        <div class="bg-white rounded-lg shadow-lg p-4">
+          <h1 class="text-xl font-bold text-gray-800 mb-2">NavSwift</h1>
+          <p class="text-sm text-gray-600 mb-4">
+            Click on the map to drop points. Then click "Find Shortest Route" to draw the path.
+          </p>
+          
+          <div class="flex gap-2">
+            <button id="resetaMap" class="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition text-sm">
+              <i data-lucide="trash-2" class="w-4 h-4"></i> Reset
             </button>
-        </div>
-    </section>
 
-  <!-- Layout -->
-  <section class="flex h-[85vh]">
-
-    <!-- Map Section -->
-    <div id="map" class="flex-1"></div>
-
-    <!-- Mobile Controls -->
-    <div class="lg:hidden absolute bottom-2 left-4 right-4 z-[1000] space-y-3">
-      <div class="bg-white rounded-lg shadow-lg p-4">
-        <h1 class="text-xl font-bold text-gray-800 mb-2">NavSwift</h1>
-        <p class="text-sm text-gray-600 mb-4">
-          Click on the map to drop points. Then click "Find Shortest Route" to draw the path.
-        </p>
-        
-        <div class="flex gap-2">
-          <button id="resetMap" class="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition text-sm">
-            <i data-lucide="trash-2" class="w-4 h-4"></i> Reset
-          </button>
-
-          <button id="runAlgorithm" class="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm">
-            <i data-lucide="route" class="w-4 h-4"></i> Find Route
-          </button>
+            <button id="runAlgorithm" class="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm">
+              <i data-lucide="route" class="w-4 h-4"></i> Find Route
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Sidebar -->
-        <div id="sidebar" class="sm:w-80 bg-white shadow-lg p-6 flex flex-col space-y-4 hidden lg:block">
-        <div class="hidden lg:block">
-            <h1 class="text-2xl font-bold text-gray-800 mb-4">NavSwift</h1>
-            <p class="text-gray-600 mb-6">
+      <!-- Sidebar -->
+          <div id="sidebar" class="sm:w-80 bg-white shadow-lg p-6 flex flex-col space-y-4 hidden lg:block">
+          <div class="hidden lg:block">
+              <h1 class="text-2xl font-bold text-gray-800 mb-4">NavSwift</h1>
+              <p class="text-gray-600 mb-6">
 
-                Click on the map to drop points. Then click “Find Shortest Route” to draw the path.
-            </p>
+                  Click on the map to drop points. Then click “Find Shortest Route” to draw the path.
+              </p>
 
-            <button id="resetMap" class="w-full flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 mb-4 transition">
-                <i data-lucide="trash-2"></i> Reset Map
-            </button>
+              <button id="resetMap" class="w-full flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 mb-4 transition">
+                  <i data-lucide="trash-2"></i> Reset Map
+              </button>
 
-            <button id="runAlgorithm" class="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
-                <i data-lucide="route"></i> Find Shortest Route
-            </button>
-        </div>
+              <button id="runAlgorithm" class="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
+                  <i data-lucide="route"></i> Find Shortest Route
+              </button>
+          </div>
 
-      <!-- Location Input Section -->
-        <div class="space-y-2">
-          
-        <!-- Starting Location -->
-        <div>
-            <label for="start" class="text-sm text-gray-600 font-medium">Starting Location</label>
-            <input id="start" type="text" placeholder="e.g., Accra Mall"
-            class="w-full mt-1 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-        </div>
+        <!-- Location Input Section -->
+          <div class="space-y-2">
+            
+          <!-- Starting Location -->
+          <div>
+              <label for="start" class="text-sm text-gray-600 font-medium">Starting Location</label>
+              <input id="start" type="text" placeholder="e.g., Accra Mall"
+              class="w-full mt-1 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+          </div>
 
-        <!-- Destination -->
-        <div>
-            <label for="end" class="text-sm text-gray-600 font-medium">Destination</label>
-            <input id="end" type="text" placeholder="e.g., Kotoka Airport"
-            class="w-full mt-1 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 focus:outline-none" />
-        </div>
+          <!-- Destination -->
+          <div>
+              <label for="end" class="text-sm text-gray-600 font-medium">Destination</label>
+              <input id="end" type="text" placeholder="e.g., Kotoka Airport"
+              class="w-full mt-1 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 focus:outline-none" />
+          </div>
 
-        <!-- Button -->
-        <button id="findRoute"
-            class="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition" onclick="closeSidebar()">
-            <i data-lucide="route"></i> Find Route
-        </button>
+          <!-- Button -->
+          <button id="findRoute"
+              class="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition" onclick="closeSidebar()">
+              <i data-lucide="route"></i> Find Route
+          </button>
 
-        <button id="resetMap" class="w-full flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 mb-4 transition">
-                <i data-lucide="trash-2"></i> Reset Map
-            </button>
-        </div>
+          <button id="resetMapBottom" class="w-full flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 mb-4 transition">
+                  <i data-lucide="trash-2"></i> Reset Map
+              </button>
+          </div>
 
-    </div>
-     </section>
+      </div>
+      </section>
 
-  <!-- JS Logic -->
-  <script>
-    // Initialize the map (Accra as default center)
-    const map = L.map('map').setView([5.6037, -0.1870], 13);
+    <!-- JS Logic -->
+    <script>
+      // Initialize the map (Accra as default center)
+      const map = L.map('map').setView([5.6037, -0.1870], 13);
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-    }).addTo(map);
-
-    let markers = [];
-    let routingControl = null;
-
-    // Handle map clicks
-    map.on('click', (e) => {
-      const marker = L.marker(e.latlng).addTo(map);
-      markers.push(marker);
-      document.getElementById('info').textContent = `Markers added: ${markers.length}`;
-    });
-
-    // Run Dijkstra (real route via roads)
-    document.getElementById('runAlgorithm').addEventListener('click', () => {
-      if (markers.length < 2) {
-        alert('Add at least two points on the map!');
-        return;
-      }
-
-      if (routingControl) {
-        map.removeControl(routingControl);
-      }
-
-      routingControl = L.Routing.control({
-        waypoints: markers.map(m => m.getLatLng()),
-        routeWhileDragging: false,
-        show: false,
-        addWaypoints: false,
-        draggableWaypoints: false,
-        lineOptions: {
-          styles: [{ color: 'blue', weight: 5 }]
-        },
+      // Add OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
       }).addTo(map);
-    });
 
-    // Reset map
-    document.getElementById('resetMap').addEventListener('click', () => {
-      markers.forEach(m => map.removeLayer(m));
-      markers = [];
-      if (routingControl) map.removeControl(routingControl);
-      routingControl = null;
-      document.getElementById('info').textContent = 'Markers added: 0';
-    });
+      let markers = [];
+      let routingControl = null;
 
-    // Initialize icons
-    lucide.createIcons();
+      // Handle map clicks
+      map.on('click', (e) => {
+        const marker = L.marker(e.latlng).addTo(map);
+        markers.push(marker);
+        document.getElementById('info').textContent = `Markers added: ${markers.length}`;
+      });
 
-    // Create map
+      // Run Dijkstra (real route via roads)
+      document.getElementById('runAlgorithm').addEventListener('click', () => {
+        if (markers.length < 2) {
+          alert('Add at least two points on the map!');
+          return;
+        }
 
-// Geocoding helper (convert text → coordinates)
-async function geocode(place) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  if (data.length === 0) throw new Error("Location not found");
-  return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        if (routingControl) {
+          map.removeControl(routingControl);
+        }
+
+        routingControl = L.Routing.control({
+          waypoints: markers.map(m => m.getLatLng()),
+          routeWhileDragging: false,
+          show: false,
+          addWaypoints: false,
+          draggableWaypoints: false,
+          lineOptions: {
+            styles: [{ color: 'blue', weight: 5 }]
+          },
+        }).addTo(map);
+      });
+
+      // Reset map
+      // Reset map function
+function resetMapHandler() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+  if (routingControl) map.removeControl(routingControl);
+  routingControl = null;
 }
 
-// Handle "Find Route" button
-document.getElementById("findRoute").addEventListener("click", async () => {
-  const start = document.getElementById("start").value.trim();
-  const end = document.getElementById("end").value.trim();
-  if (!start || !end) return alert("Please enter both locations");
+// Attach to both reset buttons
+document.getElementById('resetMap').addEventListener('click', resetMapHandler);
+document.getElementById('resetMapBottom').addEventListener('click', resetMapHandler);
 
-  // Close sidebar on mobile/tablet
-  if (window.innerWidth < 1024) { // lg breakpoint
-    sidebar.classList.add('hidden');
+      // Initialize icons
+      lucide.createIcons();
+
+      // Create map
+
+  // Geocoding helper (convert text → coordinates)
+  async function geocode(place) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.length === 0) throw new Error("Location not found");
+    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
   }
 
-  try {
-    const [startCoords, endCoords] = await Promise.all([geocode(start), geocode(end)]);
+  // Handle "Find Route" button
+  document.getElementById("findRoute").addEventListener("click", async () => {
+    const start = document.getElementById("start").value.trim();
+    const end = document.getElementById("end").value.trim();
+    if (!start || !end) return alert("Please enter both locations");
 
-    if (routingControl) map.removeControl(routingControl);
+    // Close sidebar on mobile/tablet
+    if (window.innerWidth < 1024) { // lg breakpoint
+      sidebar.classList.add('hidden');
+    }
 
-    routingControl = L.Routing.control({
-      waypoints: [
-        L.latLng(startCoords[0], startCoords[1]),
-        L.latLng(endCoords[0], endCoords[1])
-      ],
-      routeWhileDragging: true,
-      lineOptions: { styles: [{ color: "blue", weight: 5 }] },
-      show: false,
-    }).addTo(map);
+    try {
+      const [startCoords, endCoords] = await Promise.all([geocode(start), geocode(end)]);
 
-    map.fitBounds([startCoords, endCoords]);
-  } catch (err) {
-    alert("Could not find one of the locations. Try again!");
-  }
-});
+      if (routingControl) map.removeControl(routingControl);
 
-// sidebar toggle
-const sidebar = document.getElementById('sidebar');
-const toggleBtn = document.getElementById('toggleBtn');
+      routingControl = L.Routing.control({
+        waypoints: [
+          L.latLng(startCoords[0], startCoords[1]),
+          L.latLng(endCoords[0], endCoords[1])
+        ],
+        routeWhileDragging: true,
+        lineOptions: { styles: [{ color: "blue", weight: 5 }] },
+        show: false,
+      }).addTo(map);
 
-toggleBtn.addEventListener('click', () => {
-  if (sidebar.classList.contains('hidden')) {
-    sidebar.classList.remove('hidden');
-  } else {
-    sidebar.classList.add('hidden');
-  }
-});
+      map.fitBounds([startCoords, endCoords]);
+    } catch (err) {
+      alert("Could not find one of the locations. Try again!");
+    }
+  });
 
-  </script>
+  // sidebar toggle
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('toggleBtn');
 
-</body>
-</html>
+  toggleBtn.addEventListener('click', () => {
+    if (sidebar.classList.contains('hidden')) {
+      sidebar.classList.remove('hidden');
+    } else {
+      sidebar.classList.add('hidden');
+    }
+  });
+
+    </script>
+
+  </body>
+  </html>
